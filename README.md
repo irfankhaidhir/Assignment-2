@@ -14,7 +14,7 @@ Commands supported:
 
 ‘t’ : increment time by 1 second for Thread 1
 
-'r' : decrement time by 1 second
+'r' : decrement time by 1 second for Thread 1 (min 1s)
 
 ‘f’ : flag HIGH
 
