@@ -1,3 +1,41 @@
+/*
+
+Created by: Irfan
+Function: 
+
+Upon process running, create 1 thread, thread function as describe below:
+
+Main thread:
+
+Accept user command from TCP client
+
+Command supported:
+q : Quit current program (whole program)
+c : create a string buffer
+s : insert user key in string into buffer (created by c)
+g : print string buffer (user key in-in string using command s)
+t : Increment time by 1 second for Thread 1
+r : Decrement time by 1 second for Thread 1 (min 1s)
+f : flag HIGH
+z : flag LOW
+
+Thread 1:
+
+Perform the following function periodically (time control by ‘s’). Default to every seconds
+Increase the first character of string buffer : e.g. a → b, or A→ B
+
+
+Instructions:
+
+Connect to TCP server by using a TCP client. You will then be allowed to execute the following functions from the client.
+
+   1. Create string buffer
+   2. Input string
+   3. Print out buffer (Optional)
+   4. Update time for Thread 2 (Optional)
+   5. Set flag to HIGH to begin increment of string
+*/
+
 #include <stdio.h>
 #include <netdb.h>
 #include <netinet/in.h>
