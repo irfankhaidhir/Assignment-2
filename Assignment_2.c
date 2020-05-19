@@ -47,7 +47,7 @@ Connect to TCP server by using a TCP client. You will then be allowed to execute
 #include <pthread.h>
 
 #define MAX 255
-#define MAX_INBUF 3
+#define MAX_INBUF 4
 #define MAXMSG 31
 #define PORT 8080
 #define BACKLOG 10
@@ -57,25 +57,27 @@ Connect to TCP server by using a TCP client. You will then be allowed to execute
 
 unsigned int changetime = 1;
 int flag = 0, stopprocess = 0, filedes[2];
-char *buffer, *msg1 = "Your request has been rejected",*msg2 = "Your request has been accepted",*status1 = "yes",*status2 = "no";
+char *buffer, *msg1 = "Your request has been rejected",*msg2 = "Your request has been accepted";
 pthread_t t1;
+pthread_mutex_t m = PTHREAD_MUTEX_INITIALIZER;
 
 // Function designed for chat between client and server.
 void func(int sockfd)
 {
-    char buff[MAX],inbuf[MAX_INBUF];
-    unsigned int *newtime = (unsigned int*)malloc(sizeof(unsigned int)); 
+    char buff[MAX];
+    int inbuf;
+    unsigned int *newtime = (unsigned int*)malloc(sizeof(unsigned int));
 
-    read(filedes[0],inbuf,MAX_INBUF);
-    printf("%s\n", inbuf);
-    if(status2 = inbuf)
+    read(filedes[0],&inbuf,MAX_INBUF);
+
+    if(inbuf == 0)   
     {
         write(sockfd, msg1,MAXMSG);
         exit(EXIT_SUCCESS);
     }
-
-    else 
-
+    
+    else
+  
     write(sockfd, msg2,MAXMSG);
 
     // Infinite loop
@@ -83,40 +85,40 @@ void func(int sockfd)
         memset(buff,0, MAX);
         read(sockfd, buff, sizeof(buff));
 
+        pthread_mutex_lock(&m);
         switch(buff[0])
         {
 
         case 'q':
         {
-           free(buffer);
-           free(newtime);
-           pthread_cancel(t1);
-           exit(42);
-           break;
+            free(buffer);
+            free(newtime);
+            pthread_cancel(t1);
+            exit(42);
+            break;
         }
 
         case 'c':
         {
-           if (buffer == NULL)
-           {
-              buffer=(char*)malloc(sizeof(char));
-              printf("String buffer created\n");
-           }
+            if (buffer == NULL)
+            {
+                buffer=(char*)malloc(sizeof(char));
+                printf("String buffer created\n");
+            }
 
-           else
-           {
-              printf("Buffer was created previously\n");
-           }
+            else
+            {
+                printf("Buffer was created previously\n");
+            }
 
-           break;
+            break;
         }
 
         case 's':
         {
-           printf("Please key in a string\n");
-           read(sockfd, buffer, sizeof(buffer));
-           break;
-
+            printf("Please key in a string\n");
+            read(sockfd, buffer, sizeof(buffer));
+            break;
         }
 
         case 'g':
@@ -147,17 +149,18 @@ void func(int sockfd)
 
         case 'f':
         {
-           flag = 1;
-           break;
+            flag = 1;
+            break;
         }
 
         case 'z':
         {
-           flag = 0;
-           break;
+            flag = 0;
+            break;
         }
-        memset(buff,0, MAX);
+            memset(buff,0, MAX);
         }
+        pthread_mutex_unlock(&m);
     }
 }
 
@@ -175,8 +178,10 @@ void *myfunc2(void *ptr) //Thread t2
 	    {
 		    if (buffer)
 		    {
+                pthread_mutex_lock(&m);
 			    printf("%s\n",buffer);
 			    buffer[0]+=1;
+                pthread_mutex_unlock(&m);
 			    sleep(changetime);
 
 		    }
@@ -189,8 +194,7 @@ void *myfunc2(void *ptr) //Thread t2
 // Driver function
 int main()
 {
-    int sockfd, connfd;
-    char input;
+    int sockfd, connfd, *input = (int*)malloc(sizeof(int));
     socklen_t len;
     struct sockaddr_in addr,client;
 
@@ -239,20 +243,12 @@ int main()
     else
 
     printf("Client Accepted...\n");
-    printf("Allow communication? (y/n)\n");
+    printf("Allow communication?\n\n1. Yes\n2. No\n");
     pipe(filedes);
-    scanf("%c",&input);
+    scanf("%i",input);
 
-    if (input = 'y')
-    {
-        write(filedes[1],status2,MAX_INBUF);
-    }
-
-    else if (input = 'n')
-    {
-        write(filedes[1],status1,MAX_INBUF);
-    }
-
+    write(filedes[1],input,MAX_INBUF);
+    free(input);
     func(connfd);
 
 }
