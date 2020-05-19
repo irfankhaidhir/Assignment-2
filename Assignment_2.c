@@ -1,7 +1,7 @@
 /*
 
 Created by: Irfan
-Function: 
+Function:
 
 Upon process running, create 1 thread, thread function as describe below:
 
@@ -47,6 +47,8 @@ Connect to TCP server by using a TCP client. You will then be allowed to execute
 #include <pthread.h>
 
 #define MAX 255
+#define MAX_INBUF 3
+#define MAXMSG 31
 #define PORT 8080
 #define BACKLOG 10
 #define SA struct sockaddr
@@ -54,16 +56,27 @@ Connect to TCP server by using a TCP client. You will then be allowed to execute
            do { perror(msg); exit(EXIT_FAILURE); } while (0)
 
 unsigned int changetime = 1;
-int flag = 0, stopprocess = 0;
-char *buffer;
+int flag = 0, stopprocess = 0, filedes[2];
+char *buffer, *msg1 = "Your request has been rejected",*msg2 = "Your request has been accepted",*status1 = "yes",*status2 = "no";
 pthread_t t1;
-pthread_mutex_t m = PTHREAD_MUTEX_INITIALIZER;
 
 // Function designed for chat between client and server.
 void func(int sockfd)
 {
-    char buff[MAX],time;
-    unsigned int *newtime = (unsigned int*)malloc(sizeof(unsigned int));
+    char buff[MAX],inbuf[MAX_INBUF];
+    unsigned int *newtime = (unsigned int*)malloc(sizeof(unsigned int)); 
+
+    read(filedes[0],inbuf,MAX_INBUF);
+    printf("%s\n", inbuf);
+    if(status2 = inbuf)
+    {
+        write(sockfd, msg1,MAXMSG);
+        exit(EXIT_SUCCESS);
+    }
+
+    else 
+
+    write(sockfd, msg2,MAXMSG);
 
     // Infinite loop
     for (;;) {
@@ -111,7 +124,7 @@ void func(int sockfd)
         break;
 
         case 't':
-        {  
+        {
             changetime++;
             printf("Time:%is\n",changetime);
             break;
@@ -122,14 +135,14 @@ void func(int sockfd)
             if(changetime > 1)
             {
                 changetime--;
-                printf("Time:%is\n",changetime);             
+                printf("Time:%is\n",changetime);
             }
 
             else
             {
                 printf("Reached the minimum allowed time\n");
             }
-            break;  
+            break;
         }
 
         case 'f':
@@ -163,9 +176,7 @@ void *myfunc2(void *ptr) //Thread t2
 		    if (buffer)
 		    {
 			    printf("%s\n",buffer);
-                pthread_mutex_lock(&m);
 			    buffer[0]+=1;
-                pthread_mutex_unlock(&m);
 			    sleep(changetime);
 
 		    }
@@ -179,6 +190,7 @@ void *myfunc2(void *ptr) //Thread t2
 int main()
 {
     int sockfd, connfd;
+    char input;
     socklen_t len;
     struct sockaddr_in addr,client;
 
@@ -193,7 +205,6 @@ int main()
 
     printf("Socket creation SUCCESSFUL\n");
     memset(&addr,0,sizeof(addr));
-    //bzero(&addr, sizeof(addr));
     addr.sin_family = AF_INET;
     addr.sin_addr.s_addr = htonl(INADDR_ANY);
     addr.sin_port = htons(PORT);
@@ -228,8 +239,20 @@ int main()
     else
 
     printf("Client Accepted...\n");
+    printf("Allow communication? (y/n)\n");
+    pipe(filedes);
+    scanf("%c",&input);
+
+    if (input = 'y')
+    {
+        write(filedes[1],status2,MAX_INBUF);
+    }
+
+    else if (input = 'n')
+    {
+        write(filedes[1],status1,MAX_INBUF);
+    }
 
     func(connfd);
 
 }
-
