@@ -67,6 +67,7 @@ void func(int sockfd)
     char buff[MAX];
     int inbuf;
     unsigned int *newtime = (unsigned int*)malloc(sizeof(unsigned int));
+    FILE *fd;
 
     read(filedes[0],&inbuf,MAX_INBUF);
 
@@ -132,7 +133,7 @@ void func(int sockfd)
             break;
         }
 
-        case 'r':
+        case 'y':
         {
             if(changetime > 1)
             {
@@ -158,7 +159,38 @@ void func(int sockfd)
             flag = 0;
             break;
         }
-            memset(buff,0, MAX);
+
+        case 'w':
+        {
+            fd = fopen("/home/irfan-khaidhir/Documents/Assignment2.txt","w");
+
+            if (fd == NULL)
+            {
+                printf("Error while attempting to write\n");
+            }
+
+            else
+            {
+                //printf("Enter num: ");
+                //scanf("%s",&num);
+                fprintf(fd,"%s",buffer);
+                fclose(fd);
+            }
+        }
+
+        case 'r':
+        {
+            if ((fd = fopen("/home/irfan-khaidhir/Documents/Assignment2.txt","r")) == NULL)
+            {
+                printf("Error! opening file");
+            }
+
+            else
+            {
+                fscanf(fd,"%s", buffer);
+                fclose(fd);                 
+            }
+        }
         }
         pthread_mutex_unlock(&m);
     }

@@ -14,11 +14,15 @@ Commands supported:
 
 ‘t’ : increment time by 1 second for Thread 1
 
-'r' : decrement time by 1 second for Thread 1 (min 1s)
+'y' : decrement time by 1 second for Thread 1 (min 1s)
 
 ‘f’ : flag HIGH
 
 'z' : flag LOW
+
+'w' : write to file
+
+'r' : read file and overwrite buffer
 
 Thread 1:
 
