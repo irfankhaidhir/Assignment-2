@@ -45,6 +45,7 @@ Connect to TCP server by using a TCP client. You will then be allowed to execute
 #include <sys/types.h>
 #include <unistd.h>
 #include <pthread.h>
+#include <signal.h>
 
 #define MAX 255
 #define MAX_INBUF 4
@@ -61,6 +62,11 @@ char *buffer, *msg1 = "Your request has been rejected",*msg2 = "Your request has
 pthread_t t1;
 pthread_mutex_t m = PTHREAD_MUTEX_INITIALIZER;
 
+void handle_sigint(int sig) 
+{ 
+    printf("Please exit by sending command 'q' to server\n");
+} 
+
 // Function designed for chat between client and server.
 void func(int sockfd)
 {
@@ -68,6 +74,8 @@ void func(int sockfd)
     int inbuf;
     unsigned int *newtime = (unsigned int*)malloc(sizeof(unsigned int));
     FILE *fd;
+
+    signal(SIGINT, handle_sigint);
 
     read(filedes[0],&inbuf,MAX_INBUF);
 
@@ -118,7 +126,9 @@ void func(int sockfd)
         case 's':
         {
             printf("Please key in a string\n");
+            pthread_mutex_lock(&m);
             read(sockfd, buffer, sizeof(buffer));
+            pthread_mutex_unlock(&m);
             break;
         }
 
@@ -198,30 +208,28 @@ void func(int sockfd)
 
 void *myfunc2(void *ptr) //Thread t2
 {
+    while(1)
+    {
+        while(flag == 0)
+        {
+            sleep(1);
+        }
 
-   while(1)
-   {
-      while(flag == 0)
-      {
-        sleep(1);
-      }
+            while(flag == 1)
+            {
+                if (buffer)
+                {
+                    pthread_mutex_lock(&m);
+                    printf("%s\n",buffer);
+                    buffer[0]+=1;
+                    pthread_mutex_unlock(&m);
+                    sleep(changetime);
 
-	    while(flag == 1)
-	    {
-		    if (buffer)
-		    {
-                pthread_mutex_lock(&m);
-			    printf("%s\n",buffer);
-			    buffer[0]+=1;
-                pthread_mutex_unlock(&m);
-			    sleep(changetime);
+                }
 
-		    }
-
-	    }
-   }
+            }
+    }
 }
-
 
 // Driver function
 int main()
