@@ -75,7 +75,11 @@ void func(int sockfd)
     unsigned int *newtime = (unsigned int*)malloc(sizeof(unsigned int));
     FILE *fd;
 
-    signal(SIGINT, handle_sigint);
+    struct sigaction sa;
+    sa.sa_handler = handle_sigint;
+    sigemptyset(&sa.sa_mask);
+    sa.sa_flags = 0;
+    sigaction(SIGINT, &sa, NULL);
 
     read(filedes[0],&inbuf,MAX_INBUF);
 
@@ -94,7 +98,6 @@ void func(int sockfd)
         memset(buff,0, MAX);
         read(sockfd, buff, sizeof(buff));
 
-        pthread_mutex_lock(&m);
         switch(buff[0])
         {
 
@@ -160,13 +163,17 @@ void func(int sockfd)
 
         case 'f':
         {
+            pthread_mutex_lock(&m);
             flag = 1;
+            pthread_mutex_unlock(&m);
             break;
         }
 
         case 'z':
         {
+            pthread_mutex_lock(&m);
             flag = 0;
+            pthread_mutex_unlock(&m);
             break;
         }
 
@@ -208,27 +215,29 @@ void func(int sockfd)
 
 void *myfunc2(void *ptr) //Thread t2
 {
-    while(1)
-    {
-        while(flag == 0)
-        {
-            sleep(1);
-        }
+   while(1)
+   {
+      pthread_mutex_lock(&m);
+      if(flag == 0)
+      {
+         pthread_mutex_unlock(&m);
+         sleep(1);
+      }
 
-            while(flag == 1)
-            {
-                if (buffer)
-                {
-                    pthread_mutex_lock(&m);
-                    printf("%s\n",buffer);
-                    buffer[0]+=1;
-                    pthread_mutex_unlock(&m);
-                    sleep(changetime);
-
-                }
-
-            }
-    }
+	   else if(flag == 1)
+	   { 
+         pthread_mutex_unlock(&m); 
+		   if (buffer)
+		   {
+            pthread_mutex_lock(&m);
+			   buffer[0]+=1;
+			   printf("%s\n",buffer);
+            pthread_mutex_unlock(&m);                               
+			   sleep(changetime);                      
+		   }
+		 
+	   }
+   }
 }
 
 // Driver function
